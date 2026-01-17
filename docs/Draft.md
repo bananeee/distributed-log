@@ -1,16 +1,28 @@
 
 # Research
-## Blog <https://bravenewgeek.com/building-a-distributed-log-from-scratch-part-1-storage-mechanics/>
+## Blog[^2][^4]
 - storage mechanism: sequential read/write etc
 - data replication: gossip/multicast protocols and consensus protocols - prefer the later 
 
 ## Network
-- Kafka uses java NIO (non-blocking IO) for network communication.
+### Kafka 
+- Kafka uses java NIO (non-blocking IO) for network communication.[^5][^3]
 - KafkaServer has 1 acceptor thread, and multiple processor threads to handle network requests.
+
+### Virtual Thread
 - Using blocking IO with virtual thread has much more benefits than java NIO with worker pool:
   - Dont need to manage extra logic for handling non-blocking IO (selector, channel, buffer etc)
   - Virtual threads are lightweight and can scale to a large number of concurrent connections, so we can use a thread per connection model.
 
+## Protocol
+### NATS
+- NATS protocol is a simple, text-based publish/subscribe style protocol.
+- NATS protocol is parsed through a zero allocation byte parser[^6]
+
+### Kafka
+- Kafka uses a custom binary protocol for communication between clients and brokers.[^7]
+
+## Storage[^1] 
 
 # Design
 ## Prototype
@@ -23,8 +35,10 @@
 
 
 # Resources
-- <https://rohithsankepally.github.io/Kafka-Storage-Internals/>
-- <https://bravenewgeek.com/building-a-distributed-log-from-scratch-part-1-storage-mechanics/>***
-- <https://cefboud.com/posts/exploring-kafka-internals/>
-- <https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying>**
-- <https://www.automq.com/blog/understand-kafka-network-communication-and-thread-model>
+[^1]: <https://rohithsankepally.github.io/Kafka-Storage-Internals/>
+[^2]: <https://bravenewgeek.com/building-a-distributed-log-from-scratch-part-1-storage-mechanics/>***
+[^3]: <https://cefboud.com/posts/exploring-kafka-internals/>
+[^4]: <https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying>**
+[^5]: <https://www.automq.com/blog/understand-kafka-network-communication-and-thread-model>
+[^5]: <https://www.youtube.com/watch?v=ylRKac5kSOk&t=646s>
+[^7]: <https://snehasishroy.com/understanding-the-kafka-communication-protocol-in-detail>
