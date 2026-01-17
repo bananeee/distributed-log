@@ -9,6 +9,7 @@ public class Application {
         try {
             brokerServer.start();
         } catch (IOException e) {
+            brokerServer.stop();
             throw new RuntimeException(e);
         }
         System.out.println("Hello, World!");
