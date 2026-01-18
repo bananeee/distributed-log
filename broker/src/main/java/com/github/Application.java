@@ -5,11 +5,10 @@ import java.io.IOException;
 public class Application {
 
     public static void main(String[] args) {
-        BrokerServer brokerServer = new BrokerServer();
         try {
+            BrokerServer brokerServer = new BrokerServer();
             brokerServer.start();
         } catch (IOException e) {
-            brokerServer.stop();
             throw new RuntimeException(e);
         }
         System.out.println("Hello, World!");

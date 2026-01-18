@@ -3,37 +3,44 @@ package com.github;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 public class Publisher {
 
     public static final Integer PORT = 8765;
 
-    private final Socket clientSocket;
-    private final PrintWriter out;
+    private final SocketChannel socketChannel;
 
     public Publisher() {
         try {
-            clientSocket = new Socket("localhost", PORT);
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            InetSocketAddress serverAddress = new InetSocketAddress("localhost", PORT);
+            this.socketChannel = SocketChannel.open(serverAddress);
         } catch (IOException e) {
-            throw new IllegalStateException("Exception when creating publisher", e);
+            log.error("Exception when create publisher", e);
+            throw new RuntimeException(e);
         }
     }
 
     public void publish(String message) {
         System.out.println("Publishing message: " + message);
-        out.println(message);
+
+        try {
+            Charset charset = StandardCharsets.UTF_8;
+            socketChannel.write(charset.encode(message));
+        } catch (Exception e) {
+            log.error("Exception when publish", e);
+        }
     }
 
     public void stop() {
         try {
-            out.close();
-            clientSocket.close();
+            socketChannel.close();
         } catch (IOException e) {
-            log.error("Exception when stopping publisher", e);
+            throw new RuntimeException(e);
         }
     }
 }
