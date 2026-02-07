@@ -1,0 +1,11 @@
+edition = "2023";
+import "topic_fetch_request.proto";
+
+package com.github.bananeee.distributedlog.common;
+option java_multiple_files = true;
+
+message FetchRequest {
+  int32 max_wait_time = 1;
+  int32 min_bytes = 2;
+  TopicFetchRequest topic = 3;
+}

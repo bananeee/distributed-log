@@ -1,0 +1,13 @@
+edition = "2023";
+import "topic_produce.proto";
+import "produce_ack_type.proto";
+
+package com.github.bananeee.distributedlog.common;
+option java_multiple_files = true;
+
+message ProduceRequest {
+  ProduceAckType acks = 1;
+  uint64 timeout_ms = 2;
+  //  TODO: multiple topics per request for efficiency
+  TopicProduce topic = 3;
+}

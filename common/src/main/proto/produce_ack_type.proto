@@ -1,0 +1,10 @@
+edition = "2023";
+
+package com.github.bananeee.distributedlog.common;
+option java_multiple_files = true;
+
+enum ProduceAckType {
+  NO_ACK = 0;
+  LEADER_ACK = 1;
+  ALL_REPLICAS_ACK = 2;
+}

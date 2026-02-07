@@ -1,0 +1,10 @@
+edition = "2023";
+import "partition_fetch_request.proto";
+
+package com.github.bananeee.distributedlog.common;
+option java_multiple_files = true;
+
+message TopicFetchRequest {
+    string name = 1;
+    PartitionFetchRequest partition = 2;
+}

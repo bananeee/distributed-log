@@ -1,0 +1,110 @@
+# Kafka protocol
+## Structure
+- req/res = size + message
+- message = header + body
+- req's header = api_key + api_version + correlation_id + client_id
+- res's header = correlation_id
+
+## Data types
+- int8 = 1 byte signed integer
+- int16 = 2 byte signed integer (big-endian)
+- int32 = 4 byte signed integer (big-endian)
+- int64 = 8 byte signed integer (big-endian)
+- varint = variable length integer (zigzag encoding)
+- varlong = variable length long integer (zigzag encoding)
+- float64 = 8 byte IEEE 754 floating point (big-endian)
+- bool = 1 byte (0 = false, 1 = true)
+- string = int16 length + UTF-8 bytes
+- nullable_string = int16 length (-1 = null) + UTF-8 bytes
+- bytes = int32 length + byte array
+- nullable_bytes = int32 length (-1 = null) + byte array
+- array = int32 length + elements
+- nullable_array = int32 length (-1 = null) + elements
+- compact_string = varint length + UTF-8 bytes
+- compact_nullable_string = varint length (-1 = null) + UTF-8 bytes
+- compact_bytes = varint length + byte array
+- compact_nullable_bytes = varint length (-1 = null) + byte array
+- compact_array = varint length + elements
+- compact_records = varint length + byte array
+- uuid = 16 byte array
+- records = int32 length + byte array
+
+## Operations
+- Produce
+- Fetch
+- ListOffsets
+- Metadata
+- OffsetCommit
+- OffsetFetch
+- FindCoordinator
+- JoinGroup
+- Heartbeat
+- LeaveGroup
+- SyncGroup
+- DescribeGroups
+- ListGroups
+- SaslHandshake
+- ApiVersions
+- CreateTopics
+- DeleteTopics
+- DeleteRecords
+- InitProducerId
+- OffsetForLeaderEpoch
+- AddPartitionsToTxn
+- AddOffsetsToTxn
+- EndTxn
+- WriteTxnMarkers
+- TxnOffsetCommit
+- DescribeAcls
+- CreateAcls
+- DeleteAcls
+- DescribeConfigs
+- AlterConfigs
+- AlterReplicaLogDirs
+- DescribeLogDirs
+- SaslAuthenticate
+- CreatePartitions
+- CreateDelegationToken
+- RenewDelegationToken
+- ExpireDelegationToken
+- DescribeDelegationToken
+- DeleteGroups
+- ElectLeaders
+- IncrementalAlterConfigs
+- AlterPartitionReassignments
+- ListPartitionReassignments
+- OffsetDelete
+- DescribeClientQuotas
+- AlterClientQuotas
+- DescribeUserScramCredentials
+- AlterUserScramCredentials
+- DescribeQuorum
+- UpdateFeatures
+- DescribeCluster
+- DescribeProducers
+- UnregisterBroker
+- DescribeTransactions
+- ListTransactions
+- ConsumerGroupHeartbeat
+- ConsumerGroupDescribe
+- GetTelemetrySubscriptions
+- PushTelemetry
+- ListConfigResources
+- DescribeTopicPartitions
+- ShareGroupHeartbeat
+- ShareGroupDescribe
+- ShareFetch
+- ShareAcknowledge
+- AddRaftVoter
+- RemoveRaftVoter
+- InitializeShareGroupState
+- ReadShareGroupState
+- WriteShareGroupState
+- DeleteShareGroupState
+- ReadShareGroupStateSummary
+- DescribeShareGroupOffsets
+- AlterShareGroupOffsets
+- DeleteShareGroupOffset
+
+## References
+- <https://kafka.apache.org/41/design/protocol/>
