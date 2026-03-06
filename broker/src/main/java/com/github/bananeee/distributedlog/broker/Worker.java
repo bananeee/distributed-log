@@ -1,5 +1,7 @@
-package com.github;
+package com.github.bananeee.distributedlog.broker;
 
+import com.github.bananeee.distributedlog.common.ProduceRequest;
+import com.google.protobuf.Any;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -14,15 +16,19 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
+// TODO: Request dispatcher
 @Slf4j
 public class Worker implements Runnable {
+
+    private RequestHandler requestHandler;
 
     private Selector selector;
     private ByteBuffer byteBuffer;
     private CharsetDecoder charsetDecoder;
     private CharBuffer charBuffer;
 
-    public Worker() {
+    public Worker(RequestHandler requestHandler) {
+        this.requestHandler = requestHandler;
         try {
             selector = Selector.open();
 
@@ -51,7 +57,6 @@ public class Worker implements Runnable {
                 selector.select();
                 Set<SelectionKey> selectionKeys = selector.selectedKeys();
 
-                // use Iterator to easily remove processed keys
                 var iterator = selectionKeys.iterator();
                 while (iterator.hasNext()) {
                     SelectionKey key = iterator.next();
@@ -61,21 +66,53 @@ public class Worker implements Runnable {
                         continue;
                     }
 
-                    if (key.isReadable()) {
+                    if (key.isReadable()) {     // when client send terminate signal, key is readable -> need to handle it
                         try {
-                            printMsg(key);
+                            produce(key);
                         } catch (IOException e) {
+                            log.error("Error while producing message", e);
                             closeChannel(key);
                         }
                     }
 
-                    iterator.remove(); // Remove the key to avoid re-processing
+                    iterator.remove();
                 }
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    // TODO: Handle receiving large messages (check Kafka), maybe scattered read of java nio
+    // TODO: Produce with key/value
+    private void produce(SelectionKey key) throws IOException {
+        ByteBuffer sizeByteBuffer = ByteBuffer.allocate(4);
+        SocketChannel channel = (SocketChannel) key.channel();
+        int byteRead = channel.read(sizeByteBuffer);
+        if (byteRead == -1) {
+            closeChannel(key);
+            return;
+        } else if (byteRead == 0) {
+            return;
+        }
+
+        sizeByteBuffer.flip();
+        int size = sizeByteBuffer.getInt();
+
+        ByteBuffer messageByteBuffer = ByteBuffer.allocate(size);
+        byteRead = channel.read(messageByteBuffer);
+        if (byteRead == -1) {
+            closeChannel(key);
+            return;
+        } else if (byteRead == 0) {
+            return;
+        }
+
+        messageByteBuffer.flip();
+
+        Any request = Any.parseFrom(messageByteBuffer);
+        requestHandler.handle(request, channel);
     }
 
     private void printMsg(SelectionKey key) throws IOException {

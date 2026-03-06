@@ -1,4 +1,4 @@
-package com.github;
+package com.github.bananeee.distributedlog.broker;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,10 +15,11 @@ public class WorkerPool {
     private final List<Worker> workers;
     private int nextWorkerIndex = 0;
 
-    public WorkerPool() {
+    // TODO: Control pool properly, with queue, worker status and life cycle
+    public WorkerPool(RequestHandler requestHandler) {
         workers = new ArrayList<>();
         for (int i = 0; i < POOL_SIZE; i++) {
-            workers.add(new Worker());
+            workers.add(new Worker(requestHandler));
         }
     }
 
@@ -28,10 +29,6 @@ public class WorkerPool {
         }
     }
 
-    /**
-     * Round robin register channel to workers
-     * @param channel
-     */
     public void registerChannel(SocketChannel channel) {
         try {
             channel.configureBlocking(false);

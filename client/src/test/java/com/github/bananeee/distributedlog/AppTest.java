@@ -1,4 +1,4 @@
-package com.github;
+package com.github.bananeee.distributedlog;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -7,7 +7,7 @@ import junit.framework.TestSuite;
 /**
  * Unit test for simple App.
  */
-public class ApplicationTest
+public class AppTest 
     extends TestCase
 {
     /**
@@ -15,7 +15,7 @@ public class ApplicationTest
      *
      * @param testName name of the test case
      */
-    public ApplicationTest(String testName )
+    public AppTest( String testName )
     {
         super( testName );
     }
@@ -25,7 +25,7 @@ public class ApplicationTest
      */
     public static Test suite()
     {
-        return new TestSuite( ApplicationTest.class );
+        return new TestSuite( AppTest.class );
     }
 
     /**

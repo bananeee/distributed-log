@@ -1,0 +1,13 @@
+edition = "2023";
+import "record_header.proto";
+
+package com.github.bananeee.distributedlog.common;
+option java_multiple_files = true;
+
+message RecordDto {
+  RecordHeader header = 1;
+  bytes key = 2;
+  bytes value = 3;
+  int64 offset = 4;
+  int64 timestamp = 5;
+}

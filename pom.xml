@@ -13,6 +13,7 @@
     <module>sample-client</module>
     <module>broker</module>
     <module>common</module>
+      <module>client</module>
   </modules>
 
   <properties>

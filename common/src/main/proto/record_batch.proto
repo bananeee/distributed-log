@@ -1,0 +1,14 @@
+edition = "2023";
+import "record.proto";
+
+package com.github.bananeee.distributedlog.common;
+option java_multiple_files = true;
+
+message RecordBatch {
+  int64 batchOffset = 1;
+  repeated RecordDto records = 2;
+
+//  TODO
+//  int32 partitionLeader;
+
+}

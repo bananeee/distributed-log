@@ -1,4 +1,4 @@
-package com.github;
+package com.github.bananeee.distributedlog.broker;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,29 +19,20 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-
 @Slf4j
 public class BrokerServer {
 
     private static final int PORT = 8765;
     public static final int THREAD_POOL_SIZE = 10;
 
-    private ByteBuffer byteBuffer;
-    private CharBuffer charBuffer;
-    private CharsetDecoder charsetDecoder;
-    private StringBuilder stringBuilder;
-
     private Selector selector;
     private ServerSocketChannel serverSocketChannel;
 
     private WorkerPool workerPool;
+    private RequestHandler requestHandler;
+    private LogManager logManager;
 
     public BrokerServer() throws IOException {
-        byteBuffer = ByteBuffer.allocate(1024);
-        Charset charset = StandardCharsets.UTF_8;
-        charsetDecoder = charset.newDecoder();
-        stringBuilder = new StringBuilder();
-
         // NIO setup
         selector = Selector.open();
         serverSocketChannel = ServerSocketChannel.open();
@@ -49,9 +40,10 @@ public class BrokerServer {
         serverSocketChannel.configureBlocking(false);
         serverSocketChannel.register(selector, serverSocketChannel.validOps());
 
-        workerPool = new WorkerPool();
+        logManager = new LogManager();
+        requestHandler = new RequestHandler(logManager);
+        workerPool = new WorkerPool(requestHandler);
     }
-
 
     public void start() throws IOException {
         workerPool.runAll();

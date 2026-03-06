@@ -34,7 +34,19 @@
 #### Kafka[^9]
 - Kafka uses a custom binary protocol for communication between clients and brokers.[^7][^11]
 
-## Storage[^1]
+## Broker Storage[^1]
+- Topic
+  - Partition 0
+    - Segment 0
+      - .log file
+      - .index file 
+      - .timeindex file 
+      - .snapshot files 
+      - leader-epouch-checkpoint
+    - Segment 1
+    - ...
+  - Partition 1
+  - ...
 
 ## Concept
 ### NATS
@@ -95,3 +107,7 @@ Event stream/distributed log model with pull based comsumer
 [^12]: <https://jenkov.com/tutorials/java-nio/index.html>
 [^13]: <https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Internals>
 [^14]: <https://glasp.co/hatch/xktzo0ahoa54x4v4/p/hwyQEQwXvdRsxu9xzzT2>
+[^15]: <https://deepwiki.com/apache/kafka/2-broker-architecture>
+[^16]: <https://dev.to/ajinkya_singh_2c02bd40423/how-kafka-stores-billions-of-messages-the-storage-architecture-nobody-explains-51c6>
+[^17]: <https://shayne007.github.io/2025/06/09/Kafka-Storage-Architecture-Deep-Dive-Guide/>
+[^18]: <https://glasp.co/hatch/xktzo0ahoa54x4v4/p/hwyQEQwXvdRsxu9xzzT2>

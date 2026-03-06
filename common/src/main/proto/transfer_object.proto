@@ -1,0 +1,9 @@
+edition = "2023";
+import "google/protobuf/any.proto";
+
+package com.github.bananeee.distributedlog.common;
+option java_multiple_files = true;
+
+message TransferObject {
+   google.protobuf.Any payload = 1;
+}
