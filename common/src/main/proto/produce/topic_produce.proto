@@ -1,5 +1,5 @@
 edition = "2023";
-import "partition_produce.proto";
+import "produce/partition_produce.proto";
 
 package com.github.bananeee.distributedlog.common;
 option java_multiple_files = true;

@@ -1,0 +1,12 @@
+edition = "2023";
+import "record_batch.proto";
+import "fetch/fetch_error_code.proto";
+
+package com.github.bananeee.distributedlog.common;
+option java_multiple_files = true;
+
+message PartitionFetchResponse {
+    int32 index = 1;
+    FetchErrorCode errorCode = 2;
+    RecordBatch recordBatch = 3;
+}

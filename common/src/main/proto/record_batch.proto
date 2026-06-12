@@ -5,7 +5,7 @@ package com.github.bananeee.distributedlog.common;
 option java_multiple_files = true;
 
 message RecordBatch {
-  int64 batchOffset = 1;
+  int64 batchOffset = 1;    // ??? why do we need this?
   repeated RecordDto records = 2;
 
 //  TODO

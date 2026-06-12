@@ -1,11 +1,13 @@
 package com.github.bananeee.distributedlog.broker;
 
+import com.github.bananeee.distributedlog.common.FetchErrorCode;
 import com.github.bananeee.distributedlog.common.RecordBatch;
 import com.github.bananeee.distributedlog.common.RecordDto;
-import com.google.protobuf.ByteString;
+import com.github.bananeee.distributedlog.common.dto.TopicPartition;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -30,17 +32,19 @@ public class LogManager {
         return true;
     }
 
-    public ByteString readLog(String topicName, int index) {
-        List<ByteString> logs = topicToLogs.get(topicName);
+    public ResultOrError<List<RecordDto>, FetchErrorCode> readLogs(TopicPartition topicPartition, long offset, int maxRecords) {
+        List<RecordDto> logs = topicToLogs.get(topicPartition.getTopic());
         if (logs == null) {
-            log.warn("Topic {} does not exist.", topicName);
-            return null;
+            log.warn("Topic {} does not exist.", topicPartition.getTopic());
+            return ResultOrError.error(FetchErrorCode.UNKNOWN_TOPIC_OR_PARTITION);
         }
-        if (index < 0 || index >= logs.size()) {
-            log.warn("Index {} out of bounds for topic {}.", index, topicName);
-            return null;
+        if (offset < 0 || offset >= logs.size()) {
+            log.warn("Offset {} out of bounds for topic {}.", offset, topicPartition.getTopic());
+            return ResultOrError.error(FetchErrorCode.OFFSET_OUT_OF_RANGE);
         }
-        return logs.get(index);
+
+        int lastOffset = Math.max(logs.size() - 1, (int) offset + maxRecords);
+        return ResultOrError.success(logs.subList((int) offset, lastOffset));
     }
 
     public boolean appendLog(String topicName, RecordBatch batch) {
@@ -54,9 +58,9 @@ public class LogManager {
         }
 
         List<RecordDto> logs = topicToLogs.get(topicName);
-        logs.add(content);
+        logs.addAll(batch.getRecordsList());
 
-//        log.info("Appended log to topic {}. All log data: {}", topicName, Arrays.toString(logs.toArray()));
+        log.info("Appended log to topic {}. All log data: {}", topicName, Arrays.toString(logs.toArray()));
 
         return true;
     }

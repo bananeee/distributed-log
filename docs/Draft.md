@@ -90,7 +90,15 @@ Event stream/distributed log model with pull based comsumer
 # Questions
 - FetchRequest in Kafka protocol: why there is maxBytes? it should be max records right?
 - Kafka rebalancing strategy?
+- Does poll pull as much as possible? Does it wait to timeout or will poll immediately if there are more messages?
 
+## Kafka Consumer
+- ClassicKafkaConsumer#poll() why maybeTriggerWakeup() ???
+- 
+
+# TODO
+- read <https://cwiki.apache.org/confluence/display/KAFKA/KIP-345%3A+Introduce+static+membership+protocol+to+reduce+consumer+rebalances> to know what they do to improve consumer rebalance 
+- 
 
 [//]: # (# Resources)
 [^1]: <https://rohithsankepally.github.io/Kafka-Storage-Internals/>

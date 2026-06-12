@@ -1,17 +1,25 @@
 package com.github.bananeee.distributedlog.broker;
 
+import com.github.bananeee.distributedlog.common.FetchErrorCode;
 import com.github.bananeee.distributedlog.common.FetchRequest;
+import com.github.bananeee.distributedlog.common.FetchResponse;
+import com.github.bananeee.distributedlog.common.PartitionFetchRequest;
+import com.github.bananeee.distributedlog.common.PartitionFetchResponse;
 import com.github.bananeee.distributedlog.common.ProduceRequest;
 import com.github.bananeee.distributedlog.common.RecordBatch;
+import com.github.bananeee.distributedlog.common.RecordDto;
 import com.github.bananeee.distributedlog.common.TopicFetchRequest;
-import com.github.bananeee.distributedlog.common.TopicProduce;
+import com.github.bananeee.distributedlog.common.TopicFetchResponse;
+import com.github.bananeee.distributedlog.common.dto.TopicPartition;
 import com.google.protobuf.Any;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 public class RequestHandler {
@@ -45,7 +53,6 @@ public class RequestHandler {
         String topic = request.getTopic().getName();
         RecordBatch batch = request.getTopic().getPartition().getBatch();
         logManager.appendLog(topic, batch);
-
     }
 
     private void handleFetchRequest(FetchRequest request, SocketChannel channel) {
@@ -56,18 +63,77 @@ public class RequestHandler {
             log.error("Invalid fetch request: {}", validationResult.message());
             return;
         }
-        String topic = request.getTopic().getName();
+
+        TopicPartition topicPartition = new TopicPartition()
+                .setTopic(request.getTopic().getName())
+                .setPartition(request.getTopic().getPartition().getIndex());
         int offset = request.getTopic().getPartition().getIndex();
-        ByteString content = logManager.readLog(topic, offset);
-        if (content == null) {
-            log.error("Cannot fetch content for topic {} with offset {}", topic, offset);
-            return;
+
+        ResultOrError<RecordBatch, FetchErrorCode> fetchResult = fetchRecords(topicPartition, offset,
+                request.getMaxWaitTime(), request.getMinRecords(), request.getTopic().getPartition().getMaxRecords());
+
+        PartitionFetchResponse partitionFetchResponse;
+        if (fetchResult.isError()) {
+            log.error("Cannot fetch content for topic {} with offset {}", topicPartition.getTopic(), offset);
+            partitionFetchResponse = PartitionFetchResponse.newBuilder()
+                    .setIndex(offset)
+                    .setErrorCode(fetchResult.getError())
+                    .build();
         }
+        partitionFetchResponse = PartitionFetchResponse.newBuilder()
+                .setIndex(offset)
+                .setErrorCode(FetchErrorCode.SUCCESS)
+                .setRecordBatch(fetchResult.getResult())
+                .build();
+        TopicFetchResponse topicFetchResponse = TopicFetchResponse.newBuilder()
+                .setName(topicPartition.getTopic())
+                .setPartition(partitionFetchResponse)
+                .build();
+        FetchResponse response = FetchResponse.newBuilder()
+                .setTopic(topicFetchResponse)
+                .build();
+        int msgSize = response.getSerializedSize();
 
         try {
-            channel.write(content.asReadOnlyByteBuffer());
+            ByteBuffer buffer = ByteBuffer.allocate(4 + msgSize);
+            buffer.putInt(msgSize);
+            buffer.put(response.toByteArray());
+            buffer.flip();
+
+            channel.write(buffer);
         } catch (IOException e) {
             log.error("Exception when handle fetch request", e);
         }
     }
+
+    private ResultOrError<RecordBatch, FetchErrorCode> fetchRecords(TopicPartition topicPartition, long offset,
+                                                                    long maxWaitTime, int minRecords, int maxRecords) {
+        int processTime = 0;
+        List<RecordDto> records = new ArrayList<>();
+        while (processTime < maxWaitTime) {
+            ResultOrError<List<RecordDto>, FetchErrorCode> fetchedResult = logManager.readLogs(topicPartition, offset,
+                    maxRecords);
+            if (fetchedResult.isError()) {
+                return ResultOrError.error(fetchedResult.getError());
+            }
+
+            List<RecordDto> fetchedRecords = fetchedResult.getResult();
+            records.addAll(fetchedRecords);
+            if (records.size() >= minRecords) {
+                break;
+            }
+
+            processTime++;
+            try {
+                Thread.sleep(1000L);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return ResultOrError.success(RecordBatch.newBuilder()
+                .setBatchOffset(offset).addAllRecords(records)
+                .build());
+    }
+
 }

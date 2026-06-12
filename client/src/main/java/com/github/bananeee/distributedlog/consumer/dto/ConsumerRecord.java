@@ -1,5 +1,10 @@
-package com.github.bananeee.distributedlog.consumer;
+package com.github.bananeee.distributedlog.consumer.dto;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
+
+@Data
+@Accessors(chain = true)
 public class ConsumerRecord<K, V> {
     private String topic;
     private Integer partition;

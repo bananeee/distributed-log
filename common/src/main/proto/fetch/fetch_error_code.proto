@@ -1,0 +1,13 @@
+edition = "2023";
+
+package com.github.bananeee.distributedlog.common;
+option java_multiple_files = true;
+
+enum FetchErrorCode {
+  SUCCESS = 0;
+  OFFSET_OUT_OF_RANGE = 1;
+  UNKNOWN_TOPIC_OR_PARTITION = 2;
+  NOT_LEADER_FOR_PARTITION = 3;
+  REPLICA_NOT_AVAILABLE = 4;
+  UNKNOWN = 5;
+}

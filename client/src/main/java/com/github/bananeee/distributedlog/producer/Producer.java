@@ -8,7 +8,7 @@ import com.github.bananeee.distributedlog.common.RecordBatch;
 import com.github.bananeee.distributedlog.common.RecordDto;
 import com.github.bananeee.distributedlog.common.TopicProduce;
 import com.github.bananeee.distributedlog.common.constant.Constant;
-import com.github.bananeee.distributedlog.common.serialization.Serializer;
+import com.github.bananeee.distributedlog.common.serialization.Adapter;
 import com.google.protobuf.ByteString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,13 +54,13 @@ import java.time.LocalDate;
 public class Producer<K, V> {
 
     private final SocketChannel socketChannel;
-    private final Serializer<K> keySerializer;
-    private final Serializer<V> valueSerializer;
+    private final Adapter<K> keyAdapter;
+    private final Adapter<V> valueAdapter;
     private final ProduceAckType ackType;
 
-    public Producer(Serializer<K> keySerializer, Serializer<V> valueSerializer, ProduceAckType ackType) {
-        this.keySerializer = keySerializer;
-        this.valueSerializer = valueSerializer;
+    public Producer(Adapter<K> keyAdapter, Adapter<V> valueAdapter, ProduceAckType ackType) {
+        this.keyAdapter = keyAdapter;
+        this.valueAdapter = valueAdapter;
         this.ackType = ackType;
 
         try {
@@ -76,8 +76,8 @@ public class Producer<K, V> {
     // TODO: Handle ack behavior
     public void send(ProducerRecord<K, V> producerRecord) {
         RecordDto record = RecordDto.newBuilder()
-                .setKey(keySerializer.serialize(producerRecord.getKey()))
-                .setValue(valueSerializer.serialize(producerRecord.getValue()))
+                .setKey(keyAdapter.serialize(producerRecord.getKey()))
+                .setValue(valueAdapter.serialize(producerRecord.getValue()))
                 .setTimestamp(Instant.now().toEpochMilli())
                 .build();
         RecordBatch batch = RecordBatch.newBuilder()
@@ -107,6 +107,7 @@ public class Producer<K, V> {
             buffer.flip();
 
             socketChannel.write(buffer);
+
         } catch (Exception e) {
             log.error("Exception when publish", e);
         }

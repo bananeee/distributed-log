@@ -10,7 +10,7 @@ public class LogValidator {
             return new ValidationResult(false, "topic is empty");
         }
 
-        if (topic.getPartition().getContent().isEmpty()) {
+        if (topic.getPartition().getBatch().getRecordsList().isEmpty()) {
             return new ValidationResult(false, "missing content");
         }
 
